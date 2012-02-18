@@ -1,0 +1,55 @@
+/*エスケープシーケンスを可能な範囲で元に戻す
+\\	-> \
+\"	-> "
+\'	-> '
+\t	-> tab
+*/
+if(! (selecting || rectselecting)){
+	selectline;
+}
+
+begingroupundo;
+disabledraw;
+$old_searchbuffer = searchbuffer;
+#old_searchoption = searchoption;
+call Main;
+setsearch $old_searchbuffer, #old_searchoption;
+enabledraw;
+endgroupundo;
+endmacro;
+
+Main:
+	#old_seltopx = seltopx;
+	#old_seltopy = seltopy;
+	#old_selendx = selendx;
+	#old_selendy = selendy;
+
+	//選択の前後に改行を追加して部分編集しやすくする。
+	escape;
+	moveto #old_selendx, #old_selendy;
+	insert "\n";
+	moveto #old_seltopx, #old_seltopy;
+	insert "\n";
+	beginsel;
+	moveto 0, #old_selendy+1;
+	golineend;
+
+	setcompatiblemode 15;
+	rangeeditin;
+
+	replaceall "(?<=[^\\\\])\\\\t","\t", inselect,regular;
+	replaceall "\\\\\\\\","\\\\",inselect,regular;
+	replaceall "\\\\\"","\"",inselect,regular;
+	replaceall "\\\\'", "\'",inselect,regular;
+
+	#height = rangeeditend - rangeedittop;
+	rangeeditout;
+
+	//はじめに追加した改行を削除する
+	moveto 0, #old_seltopy + 1 + #height + 1;
+	backspace;
+	moveto 0, #old_seltopy + 1;
+	backspace;
+	return ;
+
+

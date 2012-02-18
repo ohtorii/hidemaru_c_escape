@@ -1,0 +1,70 @@
+/*	通常の文章をC言語で扱える文字列にする
+
+（前）
+Hello world
+"foo"
+'bar'
+
+（後）
+"Hello world\n"\
+"\"foo\"\n"
+"\'bar\'\n"
+
+（備考）
+タブも処理します。
+*/
+if(! (selecting || rectselecting)){
+	selectline;	
+}else{	
+}
+
+begingroupundo;
+disabledraw;
+$old_searchbuffer = searchbuffer;
+#old_searchoption = searchoption;
+call Main;
+setsearch $old_searchbuffer, #old_searchoption;
+enabledraw;
+endgroupundo;
+endmacro;
+
+Main:
+	#old_seltopx = seltopx;
+	#old_seltopy = seltopy;
+	#old_selendx = selendx;
+	#old_selendy = selendy;
+
+	//選択の前後に改行を追加して部分編集しやすくする。
+	escape;
+	moveto #old_selendx, #old_selendy;
+	insert "\n";
+	moveto #old_seltopx, #old_seltopy;
+	insert "\n";
+	beginsel;
+	moveto 0, #old_selendy+1;
+	golineend;
+
+	setcompatiblemode 15;
+	rangeeditin;
+
+	replaceall "\\", "\\\\\\\\",regular;
+	replaceall "\"", "\\\\\"",regular;
+	replaceall "\'", "\\\\\'",regular;
+	replaceall "\\t", "\\\\t",regular;
+	replaceall "\\n", "\\\\n\"\\\\\\n",regular;
+	replaceall "^", "\"",regular;
+
+	#height = rangeeditend - rangeedittop;	
+	rangeeditout;
+
+	//はじめに追加した改行を削除する
+	moveto 0, #old_seltopy + 1 + #height + 1;
+	backspace;
+
+	//補正
+	//insert "\\n\"";
+
+	moveto 0, #old_seltopy + 1;
+	backspace;
+	return ;
+
