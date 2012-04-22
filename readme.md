@@ -7,7 +7,7 @@
     c:\tmp\hoge.txt
 
     (後)
-    c:\\\\tmp\\\\hoge.txt
+    c:\\tmp\\hoge.txt
 
 ###アンエスケープ処理
     （前）
